@@ -15,6 +15,8 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -27,7 +29,56 @@ public class Zapoctak {
     static JLabel label1;
     static JLabel imgLabel;
     static Image img;
-    static File file;
+    static File file, tempFileBack;
+    static JMenuItem back, forward;
+    
+    
+    private static void createTempFile(String what)
+    {
+        
+        try
+        {
+            tempFileBack = File.createTempFile(what, ".jpg");
+            tempFileBack.deleteOnExit();
+            try
+            {        
+            ImageIO.write((BufferedImage)img, "jpg", tempFileBack);
+            }
+            catch(IOException e){JOptionPane.showMessageDialog(frame, "Soubor nemohl být vytvořen");}
+            
+        }
+        catch(IOException e){JOptionPane.showMessageDialog(frame, "Soubor nemohl být vytvořen");}
+        catch(SecurityException ex)
+        {
+            Path resourceDirectory = Paths.get("src","zapoctak","resources");
+            tempFileBack = new File(resourceDirectory + what + ".jpg");
+            try
+            {        
+            ImageIO.write((BufferedImage)img, "jpg", tempFileBack);
+            tempFileBack.deleteOnExit();
+            }
+            catch(IOException e){JOptionPane.showMessageDialog(frame, "Soubor nemohl být vytvořen");}
+        }
+        
+    }
+    
+    private static void emboss()
+    {
+        int w = img.getWidth(frame);
+        int h = img.getHeight(frame);
+        
+        BufferedImage bimg=(BufferedImage)img;
+        
+        Color c;
+        for(int i = 0; i < w;i++)
+        {
+            for (int j = 0; j < h; j++) 
+            {
+            
+            }
+        }
+        
+    }
     
     private static void toGrayscale()
     {
@@ -135,13 +186,15 @@ public class Zapoctak {
     
     private static void useFilter(String filter)
     {
+        createTempFile("back");
+        back.setEnabled(true);
         switch(filter)
         {
-            case "Zesvětli" : zesvetli();
+            case "Zesvětli" : { zesvetli();}
             break;
-            case "Ztmav"    : ztmav(20);  
+            case "Ztmav"    : { ztmav(20); } 
             break;
-            case "Color -> Greyscale": toGrayscale();
+            case "Color -> Greyscale": { toGrayscale();}
             break;
         }
     }
@@ -181,11 +234,33 @@ public class Zapoctak {
     
     private static void back(String what)
     {
+        File tmp = tempFileBack;
         switch(what)
         {
             case "back": 
+            {
+                forward.setEnabled(true); 
+                back.setEnabled(false); 
+                
+                createTempFile("forward");
+                try{
+                img = ImageIO.read(tmp);
+                showImage();
+                }
+                catch(IOException e){JOptionPane.showMessageDialog(frame, "Soubor nemohl být načten");}
+                
+            }
+            
                 break;
-            case "forward":
+            case "forward": {forward.setEnabled(false); 
+                back.setEnabled(true); 
+                createTempFile("back");
+                try{
+                img = ImageIO.read(tmp);
+                showImage();
+                }
+                catch(IOException e){JOptionPane.showMessageDialog(frame, "Soubor nemohl být načten");}            
+                 }
                 break;
             default:
                 break;
@@ -200,9 +275,9 @@ public class Zapoctak {
         JFileChooser chooser = new JFileChooser();
         
         chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        FileNameExtensionFilter jpg = new FileNameExtensionFilter(".jpg","jpg");
-        FileNameExtensionFilter png = new FileNameExtensionFilter(".png","png");
-        FileNameExtensionFilter gif = new FileNameExtensionFilter(".gif","gif");
+        FileNameExtensionFilter jpg = new FileNameExtensionFilter("jpg","jpg");
+        FileNameExtensionFilter png = new FileNameExtensionFilter("png","png");
+        FileNameExtensionFilter gif = new FileNameExtensionFilter("gif","gif");
         chooser.addChoosableFileFilter(jpg);
         chooser.addChoosableFileFilter(png);
         chooser.addChoosableFileFilter(gif);
@@ -221,9 +296,11 @@ public class Zapoctak {
         try{
             label1.setText(name);
         BufferedImage simg = (BufferedImage)img;
-        File outputFile = new File(name + chooser.getFileFilter());
-        ImageIO.write(simg, "", outputFile);
+        File outputFile = new File(name + "." + chooser.getFileFilter().getDescription());
         
+        
+        ImageIO.write(simg, chooser.getFileFilter().getDescription(), outputFile);
+        label1.setText(chooser.getFileFilter().getDescription());
         }
         catch(IOException e){label1.setText(e.getMessage());}
     }
@@ -240,13 +317,14 @@ public class Zapoctak {
             
             label1.setText(chooser.getSelectedFile().getName());
             file = chooser.getSelectedFile();
+            try{
+                img = ImageIO.read(file);
+                }
+                catch(IOException e){label1.setText(e.getMessage());}
             }
-        else file = null;
         
-        try{
-        img = ImageIO.read(file);
-        }
-        catch(IOException e){label1.setText(e.getMessage());}
+        
+        
     }
     
     private static void createAndShowGUI()
@@ -267,10 +345,10 @@ public class Zapoctak {
         
         JMenu menuUpravy = new JMenu("Úpravy");
         
-        JMenuItem forward = new JMenuItem("Znovu");
+        forward = new JMenuItem("Znovu");
         forward.addActionListener(e -> back("forward"));   
         forward.setEnabled(false);
-        JMenuItem back = new JMenuItem("Zpět");
+        back = new JMenuItem("Zpět");
         back.addActionListener(e -> {back("back"); forward.setEnabled(true);});   
         back.setEnabled(false);
         
