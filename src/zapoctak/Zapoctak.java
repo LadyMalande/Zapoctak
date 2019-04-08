@@ -13,8 +13,12 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.io.File;
 import java.io.IOException;
+import static java.lang.Math.abs;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.imageio.ImageIO;
@@ -28,6 +32,7 @@ public class Zapoctak {
     static JFrame frame;
     static JLabel label1;
     static JLabel imgLabel;
+    static JPanel panel;
     static Image img;
     static File file, tempFileBack;
     static JMenuItem back, forward;
@@ -61,10 +66,135 @@ public class Zapoctak {
         }
         
     }
-    
+    private static void gaussianBlur()
+    {
+        BufferedImage before = (BufferedImage)img;
+        BufferedImage after;
+        float[] matrix = {1/16f,1/8f,1/16f,1/8f,1/4f,1/8f,1/16f,1/8f,1/16f};
+        BufferedImageOp BIO = new ConvolveOp(new Kernel(3,3,matrix));
+        after = BIO.filter(before, null);
+        img = after;
+        showImage();
+        
+    }
     private static void emboss()
     {
+        
         int w = img.getWidth(frame);
+        int h = img.getHeight(frame);
+        
+        BufferedImage bimg=(BufferedImage)img;
+        BufferedImage simg= (BufferedImage)img;
+
+        float[][] matrix =
+{
+    {0,  0, -1,  0,  0},
+   {0,  0, -1,  0,  0},
+   {0,  0,  2,  0,  0},
+   {0,  0,  0,  0,  0},
+   {0,  0,  0,  0,  0},
+};
+label1.setText(Integer.toString(matrix.length));
+ /*       float[][] matrix = {
+    {1/9f,0f,0f,0f,0f,0f,0f,0f,0f},
+    {0f,1/9f,0f,0f,0f,0f,0f,0f,0f},
+            {0f,0f,1/9f,0f,0f,0f,0f,0f,0f},
+            {0f,0f,0f,1/9f,0f,0f,0f,0f,0f},
+            {0f,0f,0f,0f,1/9f,0f,0f,0f,0f},
+            {0f,0f,0f,0f,0f,1/9f,0f,0f,0f},
+            {0f,0f,0f,0f,0f,0f,1/9f,0f,0f},
+            {0f,0f,0f,0f,0f,0f,0f,1/9f,0f},
+            {0f,0f,0f,0f,0f,0f,0f,0f,1/9f}};   
+*/ 
+/*
+float[][] matrix =
+{
+  {1,  4,  6,  4,  1},
+  {4, 16, 24, 16,  4},
+  {6, 24, 36, 24,  6},
+  {4, 16, 24, 16,  4},
+  {1,  4,  6,  4,  1},
+};
+ */
+//float[][] matrix = {{0,0.2f,0},{0.2f,0.2f,0.2f},{0,0.2f,0}};
+        //float[][] matrix = {{-1,-1,0},{-1,0,1},{0,1,1}};
+        float multiplier = 1.0f;
+        double colorShift = 0.0;
+        
+        Color c0,c1;
+        for(int i = 0; i < w;i++)
+        {
+            for (int j = 0; j < h; j++) 
+            {
+                double red = 0.0, green = 0.0, blue = 0.0;
+                for (int fx = 0; fx < matrix.length; fx++) {
+                    
+                    for (int fy = 0; fy < matrix.length; fy++) {
+                        int X = abs(i - matrix.length / 2 + fx + w) % w;
+                        int Y = abs(j - matrix.length / 2 + fy + h) % h;
+                        c0      = new Color(bimg.getRGB(X, Y));
+                        
+                        red     += c0.getRed() * matrix[fx][fy];
+                        green   += c0.getGreen() * matrix[fx][fy];
+                        blue    += c0.getBlue() * matrix[fx][fy];
+                        
+
+                        
+                    }
+                }
+                int a = 0;
+                        int p;
+                        
+                        int resred = Integer.min(Integer.max((int)(multiplier * red + colorShift), 0),255);
+                        int resgreen = Integer.min(Integer.max((int)(multiplier * green + colorShift), 0),255);
+                        int resblue = Integer.min(Integer.max((int)(multiplier * blue + colorShift), 0),255);
+                        p = (a<<24) | (resred<<16) | (resgreen<<8) | resblue;
+                simg.setRGB(i,j,p);
+            }
+        }
+        
+        BufferedImage before = (BufferedImage)img;
+        BufferedImage after;
+        
+        
+        
+        
+        img = simg;
+        
+        showImage();
+        
+    }
+    
+    private static void motionBlur()
+    {
+        BufferedImage before = (BufferedImage)img;
+        BufferedImage after;
+        Kernel kernel = new Kernel(3,3, new float[]{
+            -1,-1,0,
+            -1,0,1,
+            0,1,1}
+        );
+        /*float[] matrix = {
+            1/9f,0f,0f,0f,0f,0f,0f,0f,0f,
+            0f,1/9f,0f,0f,0f,0f,0f,0f,0f,
+            0f,0f,1/9f,0f,0f,0f,0f,0f,0f,
+            0f,0f,0f,1/9f,0f,0f,0f,0f,0f,
+            0f,0f,0f,0f,1/9f,0f,0f,0f,0f,
+            0f,0f,0f,0f,0f,1/9f,0f,0f,0f,
+            0f,0f,0f,0f,0f,0f,1/9f,0f,0f,
+            0f,0f,0f,0f,0f,0f,0f,1/9f,0f,
+            0f,0f,0f,0f,0f,0f,0f,0f,1/9f};
+        */
+        BufferedImageOp BIO = new ConvolveOp(kernel);
+        after = BIO.filter(before, null);
+        img = after;
+        
+        showImage();
+    }
+    
+    private static void invert()
+    {
+         int w = img.getWidth(frame);
         int h = img.getHeight(frame);
         
         BufferedImage bimg=(BufferedImage)img;
@@ -74,10 +204,24 @@ public class Zapoctak {
         {
             for (int j = 0; j < h; j++) 
             {
-            
+                c = new Color(bimg.getRGB(i, j));
+                int red = 255- c.getRed();
+                int green = 255-c.getGreen();
+                int blue = 255-c.getBlue();
+                int a = 0;
+                int p;
+                
+                if(red > 255){red = 255;}
+                if(green > 255){green = 255;}
+                if(blue > 255){blue = 255;}
+                
+                p = (a<<24) | (red<<16) | (green<<8) | blue;
+                
+                bimg.setRGB(i,j,p);
             }
         }
-        
+        img = bimg;
+        showImage();
     }
     
     private static void toGrayscale()
@@ -190,11 +334,19 @@ public class Zapoctak {
         back.setEnabled(true);
         switch(filter)
         {
-            case "Zesvětli" : { zesvetli();}
+            case "Zesvětli" : { panel.setBackground(Color.red); zesvetli();panel.setBackground(Color.green);}
+            break; 
+            case "Ztmav"    : {panel.setBackground(Color.red);ztmav(20); panel.setBackground(Color.green);} 
             break;
-            case "Ztmav"    : { ztmav(20); } 
+            case "Color -> Greyscale": { panel.setBackground(Color.red);toGrayscale();panel.setBackground(Color.green);}
             break;
-            case "Color -> Greyscale": { toGrayscale();}
+            case "Emboss": {panel.setBackground(Color.red); emboss();panel.setBackground(Color.green);}
+            break;
+            case "Gaussian blur": { gaussianBlur();}
+            break;
+            case "Inverze": { invert();}
+            break;
+            case "Rozmazaný pohybem": { motionBlur();}
             break;
         }
     }
@@ -388,7 +540,7 @@ public class Zapoctak {
         panel2.setBackground(Color.red);
         
         
-        JPanel panel = new JPanel(new GridLayout(5,0));
+        panel = new JPanel(new GridLayout(5,0));
         panel.setBounds(50, 100, 300, 700);
         panel.setBackground(Color.blue);
         pane.add(panel);
@@ -401,7 +553,7 @@ public class Zapoctak {
         panel.add(uploadButton);
         panel.add(saveButton);
           
-        String[] filters = {"Zesvětli", "Ztmav", "Color -> Greyscale"};      
+        String[] filters = {"Zesvětli", "Ztmav", "Color -> Greyscale", "Emboss", "Gaussian blur", "Inverze", "Rozmazaný pohybem"};      
         JList filterList = new JList(filters);
         panel.add(filterList);
         
