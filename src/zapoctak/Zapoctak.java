@@ -33,10 +33,18 @@ public class Zapoctak {
     static JLabel label1;
     static JLabel imgLabel;
     static JPanel panel;
-    static Image img;
+    static private Image img;
     static File file, tempFileBack;
     static JMenuItem back, forward;
     
+    public static Image getImage()
+    {
+    return img;
+    }
+    public static void setImage(Image i)
+    {
+        img = i;
+    }
     
     private static void createTempFile(String what)
     {
@@ -164,197 +172,43 @@ float[][] matrix =
         showImage();
         
     }
-    
-    private static void motionBlur()
-    {
-        BufferedImage before = (BufferedImage)img;
-        BufferedImage after;
-        Kernel kernel = new Kernel(3,3, new float[]{
-            -1,-1,0,
-            -1,0,1,
-            0,1,1}
+    /*
+    Kernel kernel = new Kernel(3,3, new float[]{
+            0,-1,0,
+            -1,4,-1,
+            0,-1,0}
         );
-        /*float[] matrix = {
-            1/9f,0f,0f,0f,0f,0f,0f,0f,0f,
-            0f,1/9f,0f,0f,0f,0f,0f,0f,0f,
-            0f,0f,1/9f,0f,0f,0f,0f,0f,0f,
-            0f,0f,0f,1/9f,0f,0f,0f,0f,0f,
-            0f,0f,0f,0f,1/9f,0f,0f,0f,0f,
-            0f,0f,0f,0f,0f,1/9f,0f,0f,0f,
-            0f,0f,0f,0f,0f,0f,1/9f,0f,0f,
-            0f,0f,0f,0f,0f,0f,0f,1/9f,0f,
-            0f,0f,0f,0f,0f,0f,0f,0f,1/9f};
-        */
-        BufferedImageOp BIO = new ConvolveOp(kernel);
-        after = BIO.filter(before, null);
-        img = after;
-        
-        showImage();
-    }
+    */
+
     
-    private static void invert()
-    {
-         int w = img.getWidth(frame);
-        int h = img.getHeight(frame);
-        
-        BufferedImage bimg=(BufferedImage)img;
-        
-        Color c;
-        for(int i = 0; i < w;i++)
-        {
-            for (int j = 0; j < h; j++) 
-            {
-                c = new Color(bimg.getRGB(i, j));
-                int red = 255- c.getRed();
-                int green = 255-c.getGreen();
-                int blue = 255-c.getBlue();
-                int a = 0;
-                int p;
-                
-                if(red > 255){red = 255;}
-                if(green > 255){green = 255;}
-                if(blue > 255){blue = 255;}
-                
-                p = (a<<24) | (red<<16) | (green<<8) | blue;
-                
-                bimg.setRGB(i,j,p);
-            }
-        }
-        img = bimg;
-        showImage();
-    }
-    
-    private static void toGrayscale()
-    {
-        int w = img.getWidth(frame);
-        int h = img.getHeight(frame);
-        
-        BufferedImage bimg=(BufferedImage)img;
-        
-        Color c;
-        for(int i = 0; i < w;i++)
-        {
-            for (int j = 0; j < h; j++) 
-            {
-                c = new Color(bimg.getRGB(i, j));
-                int red = c.getRed();
-                int green = c.getGreen();
-                int blue = c.getBlue();
-                int a = 0;
-                int p;
-                int avgRGB = (red +green + blue)/3;
-                red = avgRGB;
-                green = avgRGB;
-                blue = avgRGB;
-                if(red > 255){red = 255;}
-                if(green > 255){green = 255;}
-                if(blue > 255){blue = 255;}
-                
-                p = (a<<24) | (red<<16) | (green<<8) | blue;
-                
-                bimg.setRGB(i,j,p);
-            }
-        }
-        img = bimg;
-        showImage();
-    }
-    
-    private static void zesvetli()
-    {
-        int w = img.getWidth(frame);
-        int h = img.getHeight(frame);
-        
-        BufferedImage bimg=(BufferedImage)img;
-        
-        Color c;
-        for(int i = 0; i < w;i++)
-        {
-            for (int j = 0; j < h; j++) 
-            {
-                c = new Color(bimg.getRGB(i, j));
-                int red = c.getRed();
-                int green = c.getGreen();
-                int blue = c.getBlue();
-                int a = 0;
-                int p;
-                red = red + 10;
-                green = green + 10;
-                blue = blue + 10;
-                if(red > 255){red = 255;}
-                if(green > 255){green = 255;}
-                if(blue > 255){blue = 255;}
-                
-                p = (a<<24) | (red<<16) | (green<<8) | blue;
-                
-                bimg.setRGB(i,j,p);
-            }
-        }
-        img = bimg;
-        showImage();
-        
-    }
-    
-    private static void ztmav(int HowMuch)
-    {
-        int w = img.getWidth(frame);
-        int h = img.getHeight(frame);
-        
-        BufferedImage bimg=(BufferedImage)img;
-        
-        Color c;
-        for(int i = 0; i < w;i++)
-        {
-            for (int j = 0; j < h; j++) 
-            {
-                c = new Color(bimg.getRGB(i, j));
-                int red = c.getRed();
-                int green = c.getGreen();
-                int blue = c.getBlue();
-                int a = 0;
-                int p;
-                red = red - HowMuch;
-                green = green - HowMuch;
-                blue = blue - HowMuch;
-                if(red < 0){red = 0;}
-                if(green < 0){green = 0;}
-                if(blue < 0){blue = 0;}
-                
-                p = (a<<24) | (red<<16) | (green<<8) | blue;
-                
-                bimg.setRGB(i,j,p);
-            }
-        }
-        img = bimg;
-        showImage();
-    }        
-    
+ 
+       
     private static void useFilter(String filter)
     {
         createTempFile("back");
         back.setEnabled(true);
         switch(filter)
         {
-            case "Zesvětli" : { panel.setBackground(Color.red); zesvetli();panel.setBackground(Color.green);}
+            case "Zesvětli" : { panel.setBackground(Color.red); Filters.zesvetli();panel.setBackground(Color.green);}
             break; 
-            case "Ztmav"    : {panel.setBackground(Color.red);ztmav(20); panel.setBackground(Color.green);} 
+            case "Ztmav"    : {panel.setBackground(Color.red);Filters.ztmav(20); panel.setBackground(Color.green);} 
             break;
-            case "Color -> Greyscale": { panel.setBackground(Color.red);toGrayscale();panel.setBackground(Color.green);}
+            case "Color -> Greyscale": { panel.setBackground(Color.red);Filters.toGrayscale();panel.setBackground(Color.green);}
             break;
             case "Emboss": {panel.setBackground(Color.red); emboss();panel.setBackground(Color.green);}
             break;
-            case "Gaussian blur": { gaussianBlur();}
+            case "Gaussian blur": { Filters.gaussianBlur();}
             break;
-            case "Inverze": { invert();}
+            case "Inverze": { Filters.invert();}
             break;
-            case "Rozmazaný pohybem": { motionBlur();}
+            case "Rozmazaný pohybem": { Filters.motionBlur();}
             break;
         }
+        showImage();
     }
     
     private static void showImage()
-    {
-        
-        
+    {       
         int h = img.getHeight(frame);
         int w = img.getWidth(frame);
         float scale;
@@ -363,25 +217,19 @@ float[][] matrix =
         {
             scale = (float)h/(float)w;
             int scaledw = (int)Math.round(800/scale);
-            imgSmaller = img.getScaledInstance(scaledw, 800, Image.SCALE_SMOOTH);
-            
+            imgSmaller = img.getScaledInstance(scaledw, 800, Image.SCALE_SMOOTH);            
         }
         else
         {
             scale = (float)w/(float)h;
             int scaledh = (int)Math.round(800/scale);
-            imgSmaller = img.getScaledInstance(800, scaledh, Image.SCALE_SMOOTH);
-            
+            imgSmaller = img.getScaledInstance(800, scaledh, Image.SCALE_SMOOTH);           
         }
         
         ImageIcon icon = new ImageIcon(imgSmaller);
-        
-        
-        
-        
+                      
         imgLabel.setIcon(icon);
-        imgLabel.setText("");
-        
+        imgLabel.setText("");        
     }
     
     private static void back(String what)
@@ -419,63 +267,61 @@ float[][] matrix =
         }
         
     }
-    
-    
-    
-    private static void saveAFile(Component c)
+       
+    private static void chooseAFile(Component c, boolean b)
     {
+        
         JFileChooser chooser = new JFileChooser();
-        
-        chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        FileNameExtensionFilter jpg = new FileNameExtensionFilter("jpg","jpg");
-        FileNameExtensionFilter png = new FileNameExtensionFilter("png","png");
-        FileNameExtensionFilter gif = new FileNameExtensionFilter("gif","gif");
-        chooser.addChoosableFileFilter(jpg);
-        chooser.addChoosableFileFilter(png);
-        chooser.addChoosableFileFilter(gif);
-        
-        String name;
-        int returnVal = chooser.showSaveDialog(c);
-        if(returnVal == JFileChooser.APPROVE_OPTION)
-            {
-            
-            label1.setText("Uložili jste soubor pod názvem " + chooser.getSelectedFile().getName());
-            name = chooser.getSelectedFile().getPath();
-            
-            }
-        else name = "image";
-        
-        try{
-            label1.setText(name);
-        BufferedImage simg = (BufferedImage)img;
-        File outputFile = new File(name + "." + chooser.getFileFilter().getDescription());
-        
-        
-        ImageIO.write(simg, chooser.getFileFilter().getDescription(), outputFile);
-        label1.setText(chooser.getFileFilter().getDescription());
+        if (b == true)
+        {
+            chooser.setDialogType(JFileChooser.OPEN_DIALOG);       
+            FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter("Obrázky","jpg","jpeg", "png","gif");
+            chooser.addChoosableFileFilter(extensionFilter);
         }
-        catch(IOException e){label1.setText(e.getMessage());}
-    }
-    private static void chooseAFile(Component c)
-    {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogType(JFileChooser.OPEN_DIALOG);
+        else
+        {
+            chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+            FileNameExtensionFilter jpg = new FileNameExtensionFilter("jpg","jpg");
+            FileNameExtensionFilter png = new FileNameExtensionFilter("png","png");
+            FileNameExtensionFilter gif = new FileNameExtensionFilter("gif","gif");
+            chooser.addChoosableFileFilter(jpg);
+            chooser.addChoosableFileFilter(png);
+            chooser.addChoosableFileFilter(gif);
+        }
         
-        FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter("Obrázky","jpg","jpeg", "png","gif");
-        chooser.addChoosableFileFilter(extensionFilter);
         int returnVal = chooser.showOpenDialog(c);
-        if(returnVal == JFileChooser.APPROVE_OPTION)
-            {
-            
-            label1.setText(chooser.getSelectedFile().getName());
-            file = chooser.getSelectedFile();
-            try{
-                img = ImageIO.read(file);
-                }
-                catch(IOException e){label1.setText(e.getMessage());}
+        if (b == true)
+        {
+            if(returnVal == JFileChooser.APPROVE_OPTION)
+            {               
+                    label1.setText(chooser.getSelectedFile().getName());
+                    file = chooser.getSelectedFile();
+                    try
+                    {
+                        img = ImageIO.read(file);
+                        Filters.setW(img.getWidth(frame));
+                        Filters.setH(img.getHeight(frame));
+                    }
+                    catch(IOException e){label1.setText(e.getMessage());}               
             }
-        
-        
+        }
+        else
+        {
+            String name;        
+            if(returnVal == JFileChooser.APPROVE_OPTION)
+            {                      
+                name = chooser.getSelectedFile().getPath();            
+            }
+            else name = "image";        
+            try
+            {
+                label1.setText(chooser.getSelectedFile().getName() + "." + chooser.getFileFilter().getDescription() );
+                BufferedImage simg = (BufferedImage)img;
+                File outputFile = new File(name + "." + chooser.getFileFilter().getDescription());
+                ImageIO.write(simg, chooser.getFileFilter().getDescription(), outputFile);
+            }
+            catch(IOException e){label1.setText(e.getMessage());}
+        }
         
     }
     
@@ -510,10 +356,10 @@ float[][] matrix =
         menubar.add(menuSoubor);
         menubar.add(menuUpravy);
         JMenuItem saveFile = new JMenuItem("Uložit...");
-        saveFile.addActionListener(e -> saveAFile(frame));   
+        saveFile.addActionListener(e -> chooseAFile(frame, false));   
         saveFile.setEnabled(false);
         JMenuItem openFile = new JMenuItem("Otevřít...");
-        openFile.addActionListener(e -> {chooseAFile(frame); showImage(); saveFile.setEnabled(true); back.setEnabled(true);});
+        openFile.addActionListener(e -> {chooseAFile(frame,true); showImage(); saveFile.setEnabled(true); back.setEnabled(true);});
         menuSoubor.add(openFile);
         menuSoubor.add(saveFile);
         menuUpravy.add(back);
@@ -527,9 +373,9 @@ float[][] matrix =
         imgLabel.setHorizontalAlignment(JLabel.CENTER);
         imgLabel.setVerticalAlignment(JLabel.CENTER);
         JButton uploadButton = new JButton("Načti obrázek");              
-        uploadButton.addActionListener(e -> {chooseAFile(frame); showImage();});
+        uploadButton.addActionListener(e -> {chooseAFile(frame,true); showImage();});
         JButton saveButton = new JButton("Ulož obrázek");               
-        saveButton.addActionListener(e -> {saveAFile(frame);});
+        saveButton.addActionListener(e -> {chooseAFile(frame, false);});
         JPanel panel2 = new JPanel(){
             @Override
             public Dimension getPreferredSize(){
