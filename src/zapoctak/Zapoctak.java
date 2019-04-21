@@ -34,8 +34,8 @@ public class Zapoctak {
     static JLabel imgLabel;
     static JPanel panel;
     static private Image img;
-    static File file, tempFileBack;
-    static JMenuItem back, forward;
+    static File file, tempFileBack, resetFile;
+    static JMenuItem back, forward, saveFile, reset;
     
     public static Image getImage()
     {
@@ -51,11 +51,17 @@ public class Zapoctak {
         
         try
         {
+            
             tempFileBack = File.createTempFile(what, ".jpg");
             tempFileBack.deleteOnExit();
+            if(what.equals("reset")){
+                resetFile = File.createTempFile(what, ".jpg");
+                resetFile.deleteOnExit();
+                }
             try
             {        
             ImageIO.write((BufferedImage)img, "jpg", tempFileBack);
+            
             }
             catch(IOException e){JOptionPane.showMessageDialog(frame, "Soubor nemohl být vytvořen");}
             
@@ -74,111 +80,8 @@ public class Zapoctak {
         }
         
     }
-    private static void gaussianBlur()
-    {
-        BufferedImage before = (BufferedImage)img;
-        BufferedImage after;
-        float[] matrix = {1/16f,1/8f,1/16f,1/8f,1/4f,1/8f,1/16f,1/8f,1/16f};
-        BufferedImageOp BIO = new ConvolveOp(new Kernel(3,3,matrix));
-        after = BIO.filter(before, null);
-        img = after;
-        showImage();
-        
-    }
-    private static void emboss()
-    {
-        
-        int w = img.getWidth(frame);
-        int h = img.getHeight(frame);
-        
-        BufferedImage bimg=(BufferedImage)img;
-        BufferedImage simg= (BufferedImage)img;
 
-        float[][] matrix =
-{
-    {0,  0, -1,  0,  0},
-   {0,  0, -1,  0,  0},
-   {0,  0,  2,  0,  0},
-   {0,  0,  0,  0,  0},
-   {0,  0,  0,  0,  0},
-};
-label1.setText(Integer.toString(matrix.length));
- /*       float[][] matrix = {
-    {1/9f,0f,0f,0f,0f,0f,0f,0f,0f},
-    {0f,1/9f,0f,0f,0f,0f,0f,0f,0f},
-            {0f,0f,1/9f,0f,0f,0f,0f,0f,0f},
-            {0f,0f,0f,1/9f,0f,0f,0f,0f,0f},
-            {0f,0f,0f,0f,1/9f,0f,0f,0f,0f},
-            {0f,0f,0f,0f,0f,1/9f,0f,0f,0f},
-            {0f,0f,0f,0f,0f,0f,1/9f,0f,0f},
-            {0f,0f,0f,0f,0f,0f,0f,1/9f,0f},
-            {0f,0f,0f,0f,0f,0f,0f,0f,1/9f}};   
-*/ 
-/*
-float[][] matrix =
-{
-  {1,  4,  6,  4,  1},
-  {4, 16, 24, 16,  4},
-  {6, 24, 36, 24,  6},
-  {4, 16, 24, 16,  4},
-  {1,  4,  6,  4,  1},
-};
- */
-//float[][] matrix = {{0,0.2f,0},{0.2f,0.2f,0.2f},{0,0.2f,0}};
-        //float[][] matrix = {{-1,-1,0},{-1,0,1},{0,1,1}};
-        float multiplier = 1.0f;
-        double colorShift = 0.0;
-        
-        Color c0,c1;
-        for(int i = 0; i < w;i++)
-        {
-            for (int j = 0; j < h; j++) 
-            {
-                double red = 0.0, green = 0.0, blue = 0.0;
-                for (int fx = 0; fx < matrix.length; fx++) {
-                    
-                    for (int fy = 0; fy < matrix.length; fy++) {
-                        int X = abs(i - matrix.length / 2 + fx + w) % w;
-                        int Y = abs(j - matrix.length / 2 + fy + h) % h;
-                        c0      = new Color(bimg.getRGB(X, Y));
-                        
-                        red     += c0.getRed() * matrix[fx][fy];
-                        green   += c0.getGreen() * matrix[fx][fy];
-                        blue    += c0.getBlue() * matrix[fx][fy];
-                        
 
-                        
-                    }
-                }
-                int a = 0;
-                        int p;
-                        
-                        int resred = Integer.min(Integer.max((int)(multiplier * red + colorShift), 0),255);
-                        int resgreen = Integer.min(Integer.max((int)(multiplier * green + colorShift), 0),255);
-                        int resblue = Integer.min(Integer.max((int)(multiplier * blue + colorShift), 0),255);
-                        p = (a<<24) | (resred<<16) | (resgreen<<8) | resblue;
-                simg.setRGB(i,j,p);
-            }
-        }
-        
-        BufferedImage before = (BufferedImage)img;
-        BufferedImage after;
-        
-        
-        
-        
-        img = simg;
-        
-        showImage();
-        
-    }
-    /*
-    Kernel kernel = new Kernel(3,3, new float[]{
-            0,-1,0,
-            -1,4,-1,
-            0,-1,0}
-        );
-    */
 
     
  
@@ -189,19 +92,29 @@ float[][] matrix =
         back.setEnabled(true);
         switch(filter)
         {
-            case "Zesvětli" : { panel.setBackground(Color.red); Filters.zesvetli();panel.setBackground(Color.green);}
+            case "Zesvětli" :               { panel.setBackground(Color.red); Filters.zesvetli();panel.setBackground(Color.green);}
             break; 
-            case "Ztmav"    : {panel.setBackground(Color.red);Filters.ztmav(20); panel.setBackground(Color.green);} 
+            case "Ztmav"    :               {panel.setBackground(Color.red); Filters.ztmav(20); panel.setBackground(Color.green);} 
             break;
-            case "Color -> Greyscale": { panel.setBackground(Color.red);Filters.toGrayscale();panel.setBackground(Color.green);}
+            case "Color -> Greyscale":      { panel.setBackground(Color.red);Filters.toGrayscale();panel.setBackground(Color.green);}
             break;
-            case "Emboss": {panel.setBackground(Color.red); emboss();panel.setBackground(Color.green);}
+            case "Emboss":                  {panel.setBackground(Color.red); Filters.emboss();panel.setBackground(Color.green);}
             break;
-            case "Gaussian blur": { Filters.gaussianBlur();}
+            case "Gaussian blur":           {Filters.gaussianBlur();}
             break;
-            case "Inverze": { Filters.invert();}
+            case "Inverze":                 {Filters.invert();}
             break;
-            case "Rozmazaný pohybem": { Filters.motionBlur();}
+            case "Rozmazaný pohybem zleva": {Filters.motionBlur();}
+            break;
+            case "Rozmazaný pohybem zprava": {Filters.motionBlurRight();}
+            break;
+            case "Detekce hran světlá":     {Filters.edgeDetection(true);}
+            break;
+            case "Detekce hran tmavá":      {Filters.edgeDetection(false);}
+            break;
+            case "Zaostři":                 {Filters.sharpen();}
+            break;
+            case "Sobel":                   {Filters.sobel();}
             break;
         }
         showImage();
@@ -230,6 +143,7 @@ float[][] matrix =
                       
         imgLabel.setIcon(icon);
         imgLabel.setText("");        
+        label1.setText(System.getProperty("java.io.tmpdir"));
     }
     
     private static void back(String what)
@@ -243,24 +157,27 @@ float[][] matrix =
                 back.setEnabled(false); 
                 
                 createTempFile("forward");
-                try{
-                img = ImageIO.read(tmp);
-                showImage();
+                try
+                {
+                    img = ImageIO.read(tmp);
+                    showImage();
                 }
                 catch(IOException e){JOptionPane.showMessageDialog(frame, "Soubor nemohl být načten");}
                 
-            }
-            
+            }           
                 break;
-            case "forward": {forward.setEnabled(false); 
+            case "forward": 
+            {   
+                forward.setEnabled(false); 
                 back.setEnabled(true); 
                 createTempFile("back");
-                try{
-                img = ImageIO.read(tmp);
-                showImage();
+                try
+                {
+                    img = ImageIO.read(tmp);
+                    showImage();
                 }
                 catch(IOException e){JOptionPane.showMessageDialog(frame, "Soubor nemohl být načten");}            
-                 }
+            }
                 break;
             default:
                 break;
@@ -270,13 +187,14 @@ float[][] matrix =
        
     private static void chooseAFile(Component c, boolean b)
     {
-        
+        int returnVal;
         JFileChooser chooser = new JFileChooser();
         if (b == true)
         {
             chooser.setDialogType(JFileChooser.OPEN_DIALOG);       
             FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter("Obrázky","jpg","jpeg", "png","gif");
             chooser.addChoosableFileFilter(extensionFilter);
+            returnVal = chooser.showOpenDialog(c);
         }
         else
         {
@@ -287,22 +205,27 @@ float[][] matrix =
             chooser.addChoosableFileFilter(jpg);
             chooser.addChoosableFileFilter(png);
             chooser.addChoosableFileFilter(gif);
+            returnVal = chooser.showSaveDialog(c);
         }
         
-        int returnVal = chooser.showOpenDialog(c);
+        
         if (b == true)
         {
             if(returnVal == JFileChooser.APPROVE_OPTION)
             {               
-                    label1.setText(chooser.getSelectedFile().getName());
-                    file = chooser.getSelectedFile();
-                    try
-                    {
-                        img = ImageIO.read(file);
-                        Filters.setW(img.getWidth(frame));
-                        Filters.setH(img.getHeight(frame));
-                    }
-                    catch(IOException e){label1.setText(e.getMessage());}               
+                label1.setText(chooser.getSelectedFile().getName());
+                file = chooser.getSelectedFile();
+                try
+                {
+                    img = ImageIO.read(file);
+                    Filters.setW(img.getWidth(frame));
+                    Filters.setH(img.getHeight(frame));
+                }
+                catch(IOException e){label1.setText(e.getMessage());}    
+                showImage(); 
+                saveFile.setEnabled(true); 
+                back.setEnabled(true);
+                createTempFile("reset");
             }
         }
         else
@@ -337,7 +260,7 @@ float[][] matrix =
         label1.setHorizontalAlignment(JLabel.CENTER);
         label1.setVerticalAlignment(JLabel.CENTER);
         imgLabel.setSize(800,800);
-        frame.setSize(1200,850);
+        frame.setSize(1200,900);
         
         JMenuBar menubar = new JMenuBar();
         
@@ -349,17 +272,20 @@ float[][] matrix =
         back = new JMenuItem("Zpět");
         back.addActionListener(e -> {back("back"); forward.setEnabled(true);});   
         back.setEnabled(false);
+        reset = new JMenuItem("Reset");
+        reset.addActionListener(e -> {back("reset"); forward.setEnabled(true);});   
+        reset.setEnabled(false);
         
         
         
         JMenu menuSoubor = new JMenu("Soubor");
         menubar.add(menuSoubor);
         menubar.add(menuUpravy);
-        JMenuItem saveFile = new JMenuItem("Uložit...");
+        saveFile = new JMenuItem("Uložit...");
         saveFile.addActionListener(e -> chooseAFile(frame, false));   
         saveFile.setEnabled(false);
         JMenuItem openFile = new JMenuItem("Otevřít...");
-        openFile.addActionListener(e -> {chooseAFile(frame,true); showImage(); saveFile.setEnabled(true); back.setEnabled(true);});
+        openFile.addActionListener(e -> {chooseAFile(frame,true); });
         menuSoubor.add(openFile);
         menuSoubor.add(saveFile);
         menuUpravy.add(back);
@@ -372,10 +298,6 @@ float[][] matrix =
         
         imgLabel.setHorizontalAlignment(JLabel.CENTER);
         imgLabel.setVerticalAlignment(JLabel.CENTER);
-        JButton uploadButton = new JButton("Načti obrázek");              
-        uploadButton.addActionListener(e -> {chooseAFile(frame,true); showImage();});
-        JButton saveButton = new JButton("Ulož obrázek");               
-        saveButton.addActionListener(e -> {chooseAFile(frame, false);});
         JPanel panel2 = new JPanel(){
             @Override
             public Dimension getPreferredSize(){
@@ -386,7 +308,7 @@ float[][] matrix =
         panel2.setBackground(Color.red);
         
         
-        panel = new JPanel(new GridLayout(5,0));
+        panel = new JPanel(new GridLayout(3,0));
         panel.setBounds(50, 100, 300, 700);
         panel.setBackground(Color.blue);
         pane.add(panel);
@@ -396,10 +318,21 @@ float[][] matrix =
        
         
         panel.add(label1);
-        panel.add(uploadButton);
-        panel.add(saveButton);
+
           
-        String[] filters = {"Zesvětli", "Ztmav", "Color -> Greyscale", "Emboss", "Gaussian blur", "Inverze", "Rozmazaný pohybem"};      
+        String[] filters = {
+            "Zesvětli",
+            "Ztmav",
+            "Color -> Greyscale",
+            "Emboss",
+            "Gaussian blur",
+            "Inverze",
+            "Rozmazaný pohybem zleva",
+            "Rozmazaný pohybem zprava",
+            "Detekce hran světlá",
+            "Detekce hran tmavá",
+            "Zaostři",
+            "Sobel"};      
         JList filterList = new JList(filters);
         panel.add(filterList);
         
@@ -408,7 +341,7 @@ float[][] matrix =
         filterButton.addActionListener(e -> useFilter(filterList.getSelectedValue().toString()));
         
         
-        //frame.pack();
+        
         frame.setVisible(true);
         
         
